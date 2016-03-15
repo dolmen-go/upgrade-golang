@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+set -o errexit
+
+PREFIX=${PREFIX:-/usr/local}
+
+if [[ ! -h "$PREFIX"/go && -d "$PREFIX"/go ]]; then
+    version="$("$PREFIX"/go/bin/go version 2>/dev/null | sed -n 's/^go version go\([^ ]*\) .*$/\1/p')"
+	if [[ -n "$version" ]]; then
+		#echo "$version"
+		sudo mv "$PREFIX"/go "$PREFIX"/go"$version"
+		sudo ln -s -r "$PREFIX"/go"$version" "$PREFIX"/go
+	fi
+fi
+
+
+url="$1"
+if [[ "x$url" = "xhttp://"* ]]; then
+	archive="$(basename "$url")"
+	goarch="$(expr "$archive" '.*\.\([^.]*\)\.tar.gz')"
+	version="$(expr "$archive" 'go\([0-9.]+\)\.[a-z0-9-]+\.tar.gz')"
+else
+	version="$1"
+	goarch="$("$PREFIX"/go/bin/go version | cut -d ' ' -f 4 | sed 's!/!-!g')"
+	archive="go${version}.${goarch}.tar.gz"
+	url="https://storage.googleapis.com/golang/${archive}"
+fi
+sha256="$2"
+tmpdir="$(xdg-user-dir DOWNLOAD)"
+
+
+if [[ -d ""$PREFIX"/go$version" ]]; then
+	echo ""$PREFIX"/go$version already exists." >&2
+	exit 1
+fi
+
+
+if [[ ! -e "$tmpdir/$archive" ]]; then
+	echo "$url -> $tmpdir/$archive"
+	wget -O "$tmpdir/$archive" "$url"
+fi
+
+if [[ -n "$sha256" ]]; then
+	if [[ "$sha256" != "$(openssl sha256 -r "$tmpdir/$archive" | cut -d ' ' -f 1)" ]]; then
+		echo "$tmpdir/$archive: incorrect sha256" >&2
+		exit 1
+	fi
+fi
+
+if [[ -h "$PREFIX"/go ]]; then
+	sudo rm "$PREFIX"/go
+fi
+
+sudo tar -C "$PREFIX" -xzf "$tmpdir/$archive"
+sudo mv "$PREFIX"/go "$PREFIX/go$version"
+sudo ln -s -r "$PREFIX/go$version" "$PREFIX/go"
+
+
