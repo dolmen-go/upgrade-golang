@@ -3,7 +3,7 @@
 set -o pipefail
 set -o errexit
 
-PREFIX=${PREFIX:-/usr/local}
+PREFIX="${PREFIX:-$(dirname "$(go env GOROOT)")}"
 
 if [[ ! -h "$PREFIX"/go && -d "$PREFIX"/go ]]; then
     version="$("$PREFIX"/go/bin/go version 2>/dev/null | sed -n 's/^go version go\([^ ]*\) .*$/\1/p')"
