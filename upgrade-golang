@@ -60,4 +60,21 @@ sudo tar -C "$PREFIX" -xzf "$tmpdir/$archive"
 sudo mv "$PREFIX"/go "$PREFIX/go$version"
 sudo ln -s -r "$PREFIX/go$version" "$PREFIX/go"
 
-
+echo Rebuilding $GOPATH/pkg...
+for osarch in $(ls "$GOPATH/pkg")
+do
+	echo - $osarch
+	#(cd "$GOPATH/pkg/$osarch"; find * -name '*.a' | sed 's/\.a$//') | GOOS=${osarch%_*} GOARCH=${goarch#*_} xargs go get
+	for pkg in $(cd "$GOPATH/pkg/$osarch"; find * -name '*.a')
+	do
+		pkg="${pkg%.a}"
+		if [[ -d "$GOPATH/src/$pkg" ]]; then
+			echo "  $pkg..."
+			GOOS=${osarch%_*} GOARCH=${goarch#*_} go get $pkg
+		else
+			echo "  $pkg: cleanup"
+			rm "$GOPATH/pkg/$osarch/$pkg.a"
+		fi
+	done
+done
+echo Done.
