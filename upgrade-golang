@@ -34,31 +34,31 @@ sha256="$2"
 tmpdir="$(xdg-user-dir DOWNLOAD)"
 
 
-if [[ -d ""$PREFIX"/go$version" ]]; then
+if [[ -d "$PREFIX/go$version" ]]; then
 	echo ""$PREFIX"/go$version already exists." >&2
-	exit 1
-fi
+	sudo ln -f -s -r "$PREFIX/go$version" "$PREFIX/go"
+else
 
-
-if [[ ! -e "$tmpdir/$archive" ]]; then
-	echo "$url -> $tmpdir/$archive"
-	wget -O "$tmpdir/$archive" "$url"
-fi
-
-if [[ -n "$sha256" ]]; then
-	if [[ "$sha256" != "$(openssl sha256 -r "$tmpdir/$archive" | cut -d ' ' -f 1)" ]]; then
-		echo "$tmpdir/$archive: incorrect sha256" >&2
-		exit 1
+	if [[ ! -e "$tmpdir/$archive" ]]; then
+		echo "$url -> $tmpdir/$archive"
+		wget -O "$tmpdir/$archive" "$url"
 	fi
-fi
 
-if [[ -h "$PREFIX"/go ]]; then
-	sudo rm "$PREFIX"/go
-fi
+	if [[ -n "$sha256" ]]; then
+		if [[ "$sha256" != "$(openssl sha256 -r "$tmpdir/$archive" | cut -d ' ' -f 1)" ]]; then
+			echo "$tmpdir/$archive: incorrect sha256" >&2
+			exit 1
+		fi
+	fi
 
-sudo tar -C "$PREFIX" -xzf "$tmpdir/$archive"
-sudo mv "$PREFIX"/go "$PREFIX/go$version"
-sudo ln -s -r "$PREFIX/go$version" "$PREFIX/go"
+	if [[ -h "$PREFIX"/go ]]; then
+		sudo rm "$PREFIX"/go
+	fi
+
+	sudo tar -C "$PREFIX" -xzf "$tmpdir/$archive"
+	sudo mv "$PREFIX"/go "$PREFIX/go$version"
+	sudo ln -s -r "$PREFIX/go$version" "$PREFIX/go"
+fi
 
 echo Rebuilding $GOPATH/pkg...
 for osarch in $(ls "$GOPATH/pkg")
