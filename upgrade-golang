@@ -68,21 +68,23 @@ else
 	$sudo ln -s -r "$PREFIX/go$version" "$PREFIX/go"
 fi
 
-echo Rebuilding $GOPATH/pkg...
-for osarch in $(ls "$GOPATH/pkg")
-do
-	echo - $osarch
-	#(cd "$GOPATH/pkg/$osarch"; find * -name '*.a' | sed 's/\.a$//') | GOOS=${osarch%_*} GOARCH=${goarch#*_} xargs go get
-	for pkg in $(cd "$GOPATH/pkg/$osarch"; find * -name '*.a')
+if [[ -n "$GOPATH" && -x "$GOPATH" ]]; then
+	echo Rebuilding $GOPATH/pkg...
+	for osarch in $(ls "$GOPATH/pkg")
 	do
-		pkg="${pkg%.a}"
-		if [[ -d "$GOPATH/src/$pkg" ]]; then
-			echo "  $pkg..."
-			GOOS=${osarch%_*} GOARCH=${goarch#*_} go get $pkg
-		else
-			echo "  $pkg: cleanup"
-			rm "$GOPATH/pkg/$osarch/$pkg.a"
-		fi
+		echo - $osarch
+		#(cd "$GOPATH/pkg/$osarch"; find * -name '*.a' | sed 's/\.a$//') | GOOS=${osarch%_*} GOARCH=${goarch#*_} xargs go get
+		for pkg in $(cd "$GOPATH/pkg/$osarch"; find * -name '*.a')
+		do
+			pkg="${pkg%.a}"
+			if [[ -d "$GOPATH/src/$pkg" ]]; then
+				echo "  $pkg..."
+				GOOS=${osarch%_*} GOARCH=${goarch#*_} go get $pkg
+			else
+				echo "  $pkg: cleanup"
+				rm "$GOPATH/pkg/$osarch/$pkg.a"
+			fi
+		done
 	done
-done
+fi
 echo Done.
