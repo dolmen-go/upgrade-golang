@@ -39,13 +39,13 @@ else
 	url="https://storage.googleapis.com/golang/${archive}"
 fi
 sha256="$2"
-tmpdir="$(xdg-user-dir DOWNLOAD)"
 
 
 if [[ -d "$PREFIX/go$version" ]]; then
 	echo ""$PREFIX"/go$version already exists." >&2
 	$sudo ln -f -s -r "$PREFIX/go$version" "$PREFIX/go"
 else
+	tmpdir="$(xdg-user-dir DOWNLOAD || mktemp -d --tmpdir)"
 
 	if [[ ! -e "$tmpdir/$archive" ]]; then
 		echo "$url -> $tmpdir/$archive"
