@@ -10,12 +10,15 @@ if [[ "_$PREFIX" = "_/usr/lib" ]]; then
 	exit 1
 fi
 
+sudo=
+[[ -w "$PREFIX" ]] || sudo=sudo
+
 if [[ ! -h "$PREFIX"/go && -d "$PREFIX"/go ]]; then
 	version="$("$PREFIX"/go/bin/go version 2>/dev/null | sed -n 's/^go version go\([^ ]*\) .*$/\1/p')"
 	if [[ -n "$version" ]]; then
 		#echo "$version"
-		sudo mv "$PREFIX"/go "$PREFIX"/go"$version"
-		sudo ln -s -r "$PREFIX"/go"$version" "$PREFIX"/go
+		$sudo mv "$PREFIX"/go "$PREFIX"/go"$version"
+		$sudo ln -s -r "$PREFIX"/go"$version" "$PREFIX"/go
 	fi
 fi
 
@@ -41,7 +44,7 @@ tmpdir="$(xdg-user-dir DOWNLOAD)"
 
 if [[ -d "$PREFIX/go$version" ]]; then
 	echo ""$PREFIX"/go$version already exists." >&2
-	sudo ln -f -s -r "$PREFIX/go$version" "$PREFIX/go"
+	$sudo ln -f -s -r "$PREFIX/go$version" "$PREFIX/go"
 else
 
 	if [[ ! -e "$tmpdir/$archive" ]]; then
@@ -57,12 +60,12 @@ else
 	fi
 
 	if [[ -h "$PREFIX"/go ]]; then
-		sudo rm "$PREFIX"/go
+		$sudo rm "$PREFIX"/go
 	fi
 
-	sudo tar -C "$PREFIX" -xzf "$tmpdir/$archive"
-	sudo mv "$PREFIX"/go "$PREFIX/go$version"
-	sudo ln -s -r "$PREFIX/go$version" "$PREFIX/go"
+	$sudo tar -C "$PREFIX" -xzf "$tmpdir/$archive"
+	$sudo mv "$PREFIX"/go "$PREFIX/go$version"
+	$sudo ln -s -r "$PREFIX/go$version" "$PREFIX/go"
 fi
 
 echo Rebuilding $GOPATH/pkg...
