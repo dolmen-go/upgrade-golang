@@ -5,8 +5,13 @@ set -o errexit
 
 PREFIX="${PREFIX:-$(dirname "$(go env GOROOT)")}"
 
+if [[ "_$PREFIX" = "_/usr/lib" ]]; then
+	echo "$0: /usr/lib/go is managed by your OS. Use a different GOROOT." >&2
+	exit 1
+fi
+
 if [[ ! -h "$PREFIX"/go && -d "$PREFIX"/go ]]; then
-    version="$("$PREFIX"/go/bin/go version 2>/dev/null | sed -n 's/^go version go\([^ ]*\) .*$/\1/p')"
+	version="$("$PREFIX"/go/bin/go version 2>/dev/null | sed -n 's/^go version go\([^ ]*\) .*$/\1/p')"
 	if [[ -n "$version" ]]; then
 		#echo "$version"
 		sudo mv "$PREFIX"/go "$PREFIX"/go"$version"
