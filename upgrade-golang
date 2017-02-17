@@ -45,7 +45,7 @@ if [[ -d "$PREFIX/go$version" ]]; then
 	echo ""$PREFIX"/go$version already exists." >&2
 	$sudo ln -f -s -r "$PREFIX/go$version" "$PREFIX/go"
 else
-	tmpdir="$(xdg-user-dir DOWNLOAD || mktemp -d --tmpdir)"
+	tmpdir="$(xdg-user-dir DOWNLOAD 2>/dev/null || mktemp -d --tmpdir)"
 
 	if [[ ! -e "$tmpdir/$archive" ]]; then
 		echo "$url -> $tmpdir/$archive"
