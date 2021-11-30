@@ -68,29 +68,4 @@ else
 	$sudo ln -s -r "$PREFIX/go$version" "$PREFIX/go"
 fi
 
-if [[ -n "$GOPATH" && -x "$GOPATH" ]]; then
-	echo Rebuilding $GOPATH/pkg...
-	for osarch in $(ls "$GOPATH/pkg")
-	do
-		# linux_amd64_race: result of go install -race
-		if [[ $osarch = *_*_* ]]; then
-			echo - $osarch: cleanup
-			rm -Rf $GOPATH/pkg/$osarch
-			continue
-		fi
-		echo - $osarch
-		#(cd "$GOPATH/pkg/$osarch"; find * -name '*.a' | sed 's/\.a$//') | GOOS=${osarch%_*} GOARCH=${goarch#*_} xargs go get
-		for pkg in $(cd "$GOPATH/pkg/$osarch"; find * -name '*.a')
-		do
-			pkg="${pkg%.a}"
-			if [[ -d "$GOPATH/src/$pkg" ]]; then
-				echo "  $pkg..."
-				GOOS=${osarch%_*} GOARCH=${goarch#*_} go get $pkg
-			else
-				echo "  $pkg: cleanup"
-				rm "$GOPATH/pkg/$osarch/$pkg.a"
-			fi
-		done
-	done
-fi
 echo Done.
