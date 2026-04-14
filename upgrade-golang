@@ -47,6 +47,10 @@ if [[ -d "$PREFIX/go$version" ]]; then
 else
 	tmpdir="$(xdg-user-dir DOWNLOAD 2>/dev/null || mktemp -d --tmpdir)"
 
+	# Delete an empty file (previous failed download)
+	if [[ -f "$tmpdir/$archive" && ! -s "$tmpdir/$archive" ]]; then
+		rm "$tmpdir/$archive"
+	fi
 	if [[ ! -e "$tmpdir/$archive" ]]; then
 		echo "$url -> $tmpdir/$archive"
 		wget -O "$tmpdir/$archive" "$url"
