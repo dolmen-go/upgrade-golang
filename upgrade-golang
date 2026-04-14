@@ -30,12 +30,21 @@ fi
 url="$1"
 if [[ "x$url" = "xhttp://"* ]]; then
 	archive="$(basename "$url")"
-	osarch="$(expr "$archive" '.*\.\([^.]*\)\.tar.gz')"
+	#osarch="$(expr "$archive" '.*\.\([^.]*\)\.tar.gz')"
 	version="$(expr "$archive" 'go\([0-9.]+\)\.[a-z0-9-]+\.tar.gz')"
 else
 	version="$1"
-	osarch="$("$PREFIX"/go/bin/go env GOHOSTOS)-$("$PREFIX"/go/bin/go env GOARCH)"
-	archive="go${version}.${osarch}.tar.gz"
+	gohostos="$("$PREFIX"/go/bin/go env GOHOSTOS)"
+	goarch="$("$PREFIX"/go/bin/go env GOARCH)"
+
+	if command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+		info="$(curl -s 'https://go.dev/dl/?mode=json' | jq '.[] | select(.version=="go'$version'") | .files[] | select(.kind=="archive" and .os=="'$gohostos'" and .arch=="'$goarch'")')"
+		archive="$(echo "$info" | jq -r .filename)"
+		sha256="$(echo "$info" | jq -r .sha256)"
+	else
+		archive="go${version}.${gohostos}-${goarch}.tar.gz"
+	fi
+
 	url="https://storage.googleapis.com/golang/${archive}"
 fi
 sha256="${2:-}"
