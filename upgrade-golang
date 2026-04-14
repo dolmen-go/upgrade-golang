@@ -28,7 +28,7 @@ if [[ -z "$1" ]]; then
 fi
 
 url="$1"
-if [[ "x$url" = "xhttp://"* ]]; then
+if [[ "x$url" = "xhttps://"* ]]; then
 	archive="$(basename "$url")"
 	#osarch="$(expr "$archive" '.*\.\([^.]*\)\.tar.gz')"
 	version="$(expr "$archive" 'go\([0-9.]+\)\.[a-z0-9-]+\.tar.gz')"
@@ -45,7 +45,7 @@ else
 		archive="go${version}.${gohostos}-${goarch}.tar.gz"
 	fi
 
-	url="https://storage.googleapis.com/golang/${archive}"
+	url="https://go.dev/dl/${archive}"
 fi
 sha256="${2:-}"
 
