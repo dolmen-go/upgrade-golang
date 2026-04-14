@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -o pipefail
+set -euo pipefail
 set -o errexit
 
 PREFIX="${PREFIX:-$(dirname "$(go env GOROOT)")}"
@@ -38,7 +38,7 @@ else
 	archive="go${version}.${osarch}.tar.gz"
 	url="https://storage.googleapis.com/golang/${archive}"
 fi
-sha256="$2"
+sha256="${2:-}"
 
 
 if [[ -d "$PREFIX/go$version" ]]; then
